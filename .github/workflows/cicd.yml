@@ -1,0 +1,91 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: cicd-main
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      web: ${{ steps.filter.outputs.web }}
+      shared: ${{ steps.filter.outputs.shared }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect changed paths
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            api:
+              - 'apps/api/**'
+            web:
+              - 'apps/web/**'
+            shared:
+              - 'packages/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'turbo.json'
+              - 'package.json'
+              - 'Dockerfile.api'
+              - 'Dockerfile.web'
+
+  build_api:
+    needs: changes
+    if: needs.changes.outputs.api == 'true' || needs.changes.outputs.shared == 'true'
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Build and push API image
+        run: |
+          OWNER="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+          docker build -f Dockerfile.api -t ghcr.io/$OWNER/budget-planner-api:latest .
+          docker push ghcr.io/$OWNER/budget-planner-api:latest
+
+  build_web:
+    needs: changes
+    if: needs.changes.outputs.web == 'true' || needs.changes.outputs.shared == 'true'
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Build and push WEB image
+        run: |
+          OWNER="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+          docker build -f Dockerfile.web -t ghcr.io/$OWNER/budget-planner-web:latest .
+          docker push ghcr.io/$OWNER/budget-planner-web:latest
+
+  deploy:
+    needs: [changes, build_api, build_web]
+    if: always() && (needs.build_api.result == 'success' || needs.build_api.result == 'skipped') && (needs.build_web.result == 'success' || needs.build_web.result == 'skipped')
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Pull & Up (deploy)
+        run: |
+          OWNER="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+          # podmień OWNER w compose jeśli masz na sztywno - najlepiej ustaw w compose poprawnego OWNER raz na zawsze
+          docker compose -f compose.prod.yml pull
+          docker compose -f compose.prod.yml up -d --remove-orphans
+          docker image prune -af || true
