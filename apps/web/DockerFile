@@ -1,0 +1,28 @@
+# --- builder ---
+FROM node:20-alpine AS builder
+WORKDIR /repo
+
+RUN corepack enable
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY apps/web/package.json apps/web/package.json
+COPY packages packages
+
+RUN pnpm install --frozen-lockfile
+
+COPY apps/web apps/web
+
+RUN pnpm -w turbo run build --filter=web...
+
+# --- runtime (standalone) ---
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+
+# standalone output
+COPY --from=builder /repo/apps/web/.next/standalone ./
+COPY --from=builder /repo/apps/web/.next/static ./.next/static
+COPY --from=builder /repo/apps/web/public ./public
+
+EXPOSE 3001
+CMD ["node", "server.js"]

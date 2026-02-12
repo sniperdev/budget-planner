@@ -1,0 +1,29 @@
+# ---------- build ----------
+FROM node:20-alpine AS build
+WORKDIR /repo
+RUN corepack enable
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY apps/api/package.json apps/api/package.json
+COPY packages packages
+COPY apps/api apps/api
+
+# instalujemy deps (tak, całość – na razie stabilność > optymalizacja)
+RUN pnpm install --frozen-lockfile
+RUN pnpm -w turbo run build --filter=api...
+
+# ---------- runtime ----------
+FROM node:20-alpine AS runner
+WORKDIR /app
+RUN corepack enable
+ENV NODE_ENV=production
+
+# kopiujemy kod appki
+COPY --from=build /repo/apps/api ./apps/api
+COPY --from=build /repo/package.json /repo/pnpm-lock.yaml /repo/pnpm-workspace.yaml /repo/turbo.json ./
+
+# instalujemy TYLKO produkcyjne deps dla api
+RUN pnpm install --prod --frozen-lockfile --filter ./apps/api...
+
+EXPOSE 3000
+CMD ["node", "apps/api/dist/main.js"]
