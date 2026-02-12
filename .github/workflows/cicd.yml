@@ -2,7 +2,7 @@ name: CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 permissions:
   contents: read
@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Detect changed paths
-      - id: filter
+        id: filter
         uses: dorny/paths-filter@v3
         with:
           filters: |
@@ -39,6 +39,7 @@ jobs:
               - 'package.json'
               - 'Dockerfile.api'
               - 'Dockerfile.web'
+              - 'compose.prod.yml'
 
   build_api:
     needs: changes
@@ -84,8 +85,6 @@ jobs:
 
       - name: Pull & Up (deploy)
         run: |
-          OWNER="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
-          # podmień OWNER w compose jeśli masz na sztywno - najlepiej ustaw w compose poprawnego OWNER raz na zawsze
           docker compose -f compose.prod.yml pull
           docker compose -f compose.prod.yml up -d --remove-orphans
           docker image prune -af || true
