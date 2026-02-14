@@ -2,14 +2,14 @@ name: CI/CD
 
 on:
   push:
-    branches: ["main"]
+    branches: ["prod"]
 
 permissions:
   contents: read
   packages: write
 
 concurrency:
-  group: cicd-main
+  group: cicd-prod
   cancel-in-progress: true
 
 jobs:
