@@ -20,9 +20,13 @@ const ThemeImage = (props: Props) => {
   );
 };
 
+const apiBaseUrl =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ??
+  'http://localhost:3000';
+
 async function getLinks(): Promise<Link[]> {
   try {
-    const res = await fetch('http://localhost:3000/links', {
+    const res = await fetch(`${apiBaseUrl}/links`, {
       cache: 'no-store',
     });
 
@@ -39,7 +43,7 @@ async function getLinks(): Promise<Link[]> {
 
 async function getHealthStatus(): Promise<string> {
   try {
-    const res = await fetch('http://localhost:3000/health', {
+    const res = await fetch(`${apiBaseUrl}/health`, {
       cache: 'no-store',
     });
 
