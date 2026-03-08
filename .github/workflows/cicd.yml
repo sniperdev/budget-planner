@@ -54,7 +54,9 @@ jobs:
       - name: Build and push API image
         run: |
           OWNER="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
-          docker build -f Dockerfile.api -t ghcr.io/$OWNER/budget-planner-api:latest .
+          TAG="${{ github.sha }}"
+          docker build -f Dockerfile.api -t ghcr.io/$OWNER/budget-planner-api:${TAG:0:7} -t ghcr.io/$OWNER/budget-planner-api:latest .
+          docker push ghcr.io/$OWNER/budget-planner-api:${TAG:0:7}
           docker push ghcr.io/$OWNER/budget-planner-api:latest
 
   build_web:
@@ -70,12 +72,14 @@ jobs:
       - name: Build and push WEB image
         run: |
           OWNER="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
-          docker build -f Dockerfile.web -t ghcr.io/$OWNER/budget-planner-web:latest .
+          TAG="${{ github.sha }}"
+          docker build -f Dockerfile.web -t ghcr.io/$OWNER/budget-planner-web:${TAG:0:7} -t ghcr.io/$OWNER/budget-planner-web:latest .
+          docker push ghcr.io/$OWNER/budget-planner-web:${TAG:0:7}
           docker push ghcr.io/$OWNER/budget-planner-web:latest
 
   deploy:
     needs: [changes, build_api, build_web]
-    if: always() && (needs.build_api.result == 'success' || needs.build_api.result == 'skipped') && (needs.build_web.result == 'success' || needs.build_web.result == 'skipped')
+    if: (needs.changes.outputs.api == 'true' || needs.changes.outputs.web == 'true' || needs.changes.outputs.shared == 'true') && (needs.build_api.result == 'success' || needs.build_api.result == 'skipped') && (needs.build_web.result == 'success' || needs.build_web.result == 'skipped')
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
