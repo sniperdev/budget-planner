@@ -1,8 +1,8 @@
 import type { Link } from '@repo/api';
-import { Button } from '@repo/ui/button';
 import Image, { type ImageProps } from 'next/image';
 
 import styles from './page.module.css';
+import { Button } from '@mui/material';
 
 type Props = Omit<ImageProps, 'src'> & {
   srcLight: string;
@@ -77,6 +77,7 @@ export default async function Home() {
         />
         <ol>
           <li>
+            <Button>Test</Button>
             Get started by editing <code>apps/web/app/page.tsx</code>
           </li>
           <li>Save and see your changes instantly.</li>
