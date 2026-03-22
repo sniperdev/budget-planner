@@ -18,4 +18,19 @@ export class UsersService {
             data,
         });
     }
+
+    async findUserById(id: string) {
+        return this.prisma.user.findUnique({
+            where: {
+                id,
+            }
+        });
+    }
+
+    async updateRefreshTokenHash(userId: string, refreshTokenHash: string) {
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: { refreshToken: refreshTokenHash },
+        })
+    }
 }
