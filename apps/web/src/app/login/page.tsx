@@ -17,9 +17,10 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import GoogleIcon from '@mui/icons-material/Google';
-import FacebookIcon from '@mui/icons-material/Facebook';
 import { styled } from '@mui/material/styles';
+import { useAppDispatch } from '../../store/hooks';
+import { useLoginMutation } from '../../store/slices/auth/auth.api';
+import { setSession } from '../../store/slices/auth/auth.slice';
 
 type ForgotPasswordProps = {
   open: boolean;
@@ -45,7 +46,7 @@ const Card = styled(MuiCard)(({ theme }) => ({
   }),
 }));
 
-const SignUpContainer = styled(Stack)(({ theme }) => ({
+const SignInContainer = styled(Stack)(({ theme }) => ({
   height: 'calc((1 - var(--template-frame-height, 0)) * 80dvh)',
   minHeight: '100%',
   padding: theme.spacing(2),
@@ -84,14 +85,16 @@ function ForgotPassword({ open, handleClose }: ForgotPasswordProps) {
   );
 }
 
+
+
 export default function SignIn() {
+  const dispatch = useAppDispatch();
+  const [login, {isLoading}] = useLoginMutation();
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
   const [passwordError, setPasswordError] = React.useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
   const [open, setOpen] = React.useState(false);
-  const [nameError, setNameError] = React.useState(false);
-  const [nameErrorMessage, setNameErrorMessage] = React.useState('');
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -101,22 +104,24 @@ export default function SignIn() {
     setOpen(false);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    if (emailError || passwordError) {
-      event.preventDefault();
-      return;
-    }
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
-  };
+    const email = String(data.get('email'));
+    const password = String(data.get('password'));
 
-    const validateInputs = () => {
+    try {
+      const result = await login({ email, password }).unwrap();
+      dispatch(setSession(result));
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
+
+  }
+
+  const validateInputs = () => {
     const email = document.getElementById('email') as HTMLInputElement;
     const password = document.getElementById('password') as HTMLInputElement;
-    const name = document.getElementById('name') as HTMLInputElement;
 
     let isValid = true;
 
@@ -138,94 +143,89 @@ export default function SignIn() {
       setPasswordErrorMessage('');
     }
 
-    if (!name.value || name.value.length < 1) {
-      setNameError(true);
-      setNameErrorMessage('Name is required.');
-      isValid = false;
-    } else {
-      setNameError(false);
-      setNameErrorMessage('');
-    }
-
     return isValid;
   };
 
   return (
     <>
-      <SignUpContainer>
+      <SignInContainer>
         <Card variant="outlined">
           <Typography
             component="h1"
             variant="h4"
             sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
           >
-            Sign up
+            Sign in
           </Typography>
           <Box
             component="form"
             onSubmit={handleSubmit}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+            noValidate
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              width: '100%',
+              gap: 2,
+            }}
           >
-            <FormControl>
-              <FormLabel htmlFor="name">Full name</FormLabel>
-              <TextField
-                autoComplete="name"
-                name="name"
-                required
-                fullWidth
-                id="name"
-                placeholder="Jon Snow"
-                error={nameError}
-                helperText={nameErrorMessage}
-                color={nameError ? 'error' : 'primary'}
-              />
-            </FormControl>
             <FormControl>
               <FormLabel htmlFor="email">Email</FormLabel>
               <TextField
-                required
-                fullWidth
-                id="email"
-                placeholder="your@email.com"
-                name="email"
-                autoComplete="email"
-                variant="outlined"
                 error={emailError}
                 helperText={emailErrorMessage}
-                color={passwordError ? 'error' : 'primary'}
+                id="email"
+                type="email"
+                name="email"
+                placeholder="your@email.com"
+                autoComplete="email"
+                autoFocus
+                required
+                fullWidth
+                variant="outlined"
+                color={emailError ? 'error' : 'primary'}
               />
             </FormControl>
             <FormControl>
               <FormLabel htmlFor="password">Password</FormLabel>
               <TextField
-                required
-                fullWidth
+                error={passwordError}
+                helperText={passwordErrorMessage}
                 name="password"
                 placeholder="••••••"
                 type="password"
                 id="password"
-                autoComplete="new-password"
+                autoComplete="current-password"
+                required
+                fullWidth
                 variant="outlined"
-                error={passwordError}
-                helperText={passwordErrorMessage}
                 color={passwordError ? 'error' : 'primary'}
               />
             </FormControl>
             <FormControlLabel
-              control={<Checkbox value="allowExtraEmails" color="primary" />}
-              label="I want to receive updates via email."
+              control={<Checkbox value="remember" color="primary" />}
+              label="Remember me"
             />
+            <ForgotPassword open={open} handleClose={handleClose} />
             <Button
               type="submit"
               fullWidth
               variant="contained"
               onClick={validateInputs}
             >
-              Sign up
+              Sign in
             </Button>
+            <Link
+              component="button"
+              type="button"
+              onClick={handleClickOpen}
+              variant="body2"
+              sx={{ alignSelf: 'center' }}
+            >
+              Forgot your password?
+            </Link>
           </Box>
         </Card>
-      </SignUpContainer>
+      </SignInContainer>
     </>
   );
 }
