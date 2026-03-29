@@ -1,8 +1,9 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
+import { LoginInput,loginSchema, RegisterInput, registerSchema } from '@repo/api'
 import { Request, Response } from 'express';
-import { AuthService } from './auth.service';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
-import { registerSchema, RegisterInput, loginSchema, LoginInput } from '@repo/api'
+
+import { AuthService } from './auth.service';
 import { jwtConstants } from './constants';
 
 @Controller('auth')

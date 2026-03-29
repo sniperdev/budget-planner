@@ -1,9 +1,10 @@
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from 'src/users/users.service';
+import { AuthServiceResult, AuthTokens } from '@repo/api';
 import * as bcrypt from 'bcrypt';
+import { UsersService } from 'src/users/users.service';
+
 import { jwtConstants } from './constants';
-import { access } from 'fs';
 
 @Injectable()
 export class AuthService {
@@ -12,7 +13,7 @@ export class AuthService {
         private jwtService: JwtService
     ) {}
 
-    async signIn(email: string, pass: string): Promise<any> {
+    async signIn(email: string, pass: string): Promise<AuthServiceResult> {
         const user = await this.usersService.findUserByEmail(email);
         if (!user) {
             throw new UnauthorizedException('Invalid credentials');
@@ -35,7 +36,7 @@ export class AuthService {
         }
     }
 
-    async signUp(email: string, pass: string, fullName: string): Promise<any> {
+    async signUp(email: string, pass: string, fullName: string): Promise<AuthServiceResult> {
         const existingUser = await this.usersService.findUserByEmail(email);
         if (existingUser) {
             throw new ConflictException('User with this email already exists');
@@ -52,7 +53,7 @@ export class AuthService {
         const tokens = await this.signTokens(createdUser.id, createdUser.email);
         await this.storeRefreshToken(createdUser.id, tokens.refreshToken);
         return {
-            token: tokens.accessToken,
+            accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
             user: {
                 id: createdUser.id,
@@ -62,14 +63,14 @@ export class AuthService {
         }
     }
 
-    async refreshTokens(refreshToken: string) {
+    async refreshTokens(refreshToken: string): Promise<AuthServiceResult> {
         let payload: { sub: string; email: string };
 
         try {
             payload = await this.jwtService.verifyAsync(refreshToken, {
                 secret: jwtConstants.refreshSecret,
             });
-        } catch (error) {
+        } catch {
             throw new UnauthorizedException('Invalid refresh token');
 
         }
@@ -102,7 +103,7 @@ export class AuthService {
         await this.usersService.updateRefreshTokenHash(userId, null);
     }
 
-    private async signTokens(userId: string, email: string) {
+    private async signTokens(userId: string, email: string): Promise<AuthTokens> {
         const payload = { sub: userId, email };
 
         const [accessToken, refreshToken] = await Promise.all([

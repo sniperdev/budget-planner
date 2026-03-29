@@ -2,12 +2,13 @@
 
 import React from "react";
 import { Provider } from "react-redux";
-import { AppStore, makeStore } from "./store";
+
 import { useAppDispatch, useAppSelector } from "./hooks";
 import { authApi } from "./slices/auth/auth.api";
+import { AppStore, makeStore } from "./store";
 
 
-type Props = {
+type Properties = {
     children: React.ReactNode;
 }
 
@@ -26,18 +27,18 @@ function RefreshTokenListener() {
         return () => clearInterval(refreshInterval);
     }, [dispatch, isAuthenticated]);
 
-    return null;
+    return <></>;
 }
 
-export default function StoreProvider({ children }: Props) {
-    const storeRef = React.useRef<AppStore | null>(null);
+export default function StoreProvider({ children }: Properties) {
+    const storeReference = React.useRef<AppStore | null>(null);
 
-    if (!storeRef.current) {
-        storeRef.current = makeStore();
+    if (!storeReference.current) {
+        storeReference.current = makeStore();
     }
 
     return (
-        <Provider store={storeRef.current}>
+        <Provider store={storeReference.current}>
             <RefreshTokenListener />
             {children}
         </Provider>

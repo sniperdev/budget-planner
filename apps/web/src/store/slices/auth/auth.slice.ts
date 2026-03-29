@@ -7,14 +7,14 @@ type User = {
 }
 
 type AuthState = {
-    user: User | null;
-    accessToken: string | null;
+    user: User | undefined;
+    accessToken: string | undefined;
     isAuthenticated: boolean;
 }
 
 const initialState: AuthState = {
-    user: null,
-    accessToken: null,
+    user: undefined,
+    accessToken: undefined,
     isAuthenticated: false,
 }
 
@@ -31,8 +31,8 @@ const authSlice = createSlice({
             state.isAuthenticated = true;
         },
         clearSession: (state) => {
-            state.user = null;
-            state.accessToken = null;
+            state.user = undefined;
+            state.accessToken = undefined;
             state.isAuthenticated = false;
         }
     }

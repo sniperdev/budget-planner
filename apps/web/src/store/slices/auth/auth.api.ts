@@ -1,5 +1,6 @@
 import { LoginInput, RegisterInput } from "@repo/api";
-import { baseApi } from "../../api/baseApi";
+
+import { baseApi } from "../../api/base-api";
 
 
 type User = {
