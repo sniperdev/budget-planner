@@ -7,7 +7,6 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { loginSchema } from '@repo/api';
 import Link from 'next/link';
-import * as React from 'react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -16,9 +15,11 @@ import { useAppDispatch } from '../../store/hooks';
 import { useLoginMutation } from '../../store/slices/auth/auth.api';
 import { setSession } from '../../store/slices/auth/auth.slice';
 
+type LoginFormValues = z.infer<typeof loginSchema>;
+
 export default function SignIn() {
   const dispatch = useAppDispatch();
-  const [login, {isLoading}] = useLoginMutation();
+  const [login, { isLoading }] = useLoginMutation();
 
   const [loginError, setLoginError] = useState<string>();
 
@@ -31,14 +32,14 @@ export default function SignIn() {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    try{
+    try {
       const result = await login(data).unwrap();
-      dispatch(setSession(result))
+      dispatch(setSession(result));
+      setLoginError(undefined);
+    } catch {
+      setLoginError('Invalid email or password');
     }
-    catch(err){
-      setLoginError(err)
-    }
-  }
+  };
 
   return (
     <>
@@ -88,9 +89,7 @@ export default function SignIn() {
           </form>
           {loginError && (
             <Typography color="error">
-              {typeof loginError === 'string'
-                ? loginError
-                : loginError.data?.message || 'An unexpected error occurred'}
+              {loginError}
             </Typography>
           )}
           <Box sx={{ mt: 2, textAlign: 'center' }}>

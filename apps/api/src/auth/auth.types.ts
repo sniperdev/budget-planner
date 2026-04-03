@@ -4,8 +4,12 @@ export type AuthUser = {
   fullName: string;
 };
 
-export type AuthResponse = {
+export type AuthTokens = {
   accessToken: string;
+  refreshToken: string;
+};
+
+export type AuthServiceResult = AuthTokens & {
   user: AuthUser;
 };
 

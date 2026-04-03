@@ -1,13 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-type User = {
-    id: string;
-    name: string;
-    email: string;
-}
+import type { AuthResponse, AuthUser } from "@repo/api";
 
 type AuthState = {
-    user: User | undefined;
+    user: AuthUser | undefined;
     accessToken: string | undefined;
     isAuthenticated: boolean;
 }
@@ -24,7 +19,7 @@ const authSlice = createSlice({
     reducers: {
         setSession: (
             state,
-            action: PayloadAction<{ user: User, accessToken: string }>
+            action: PayloadAction<AuthResponse>
         ) => {
             state.user = action.payload.user;
             state.accessToken = action.payload.accessToken;

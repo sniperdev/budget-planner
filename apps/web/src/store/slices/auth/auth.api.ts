@@ -1,18 +1,7 @@
-import { LoginInput, RegisterInput } from "@repo/api";
+import { AuthResponse, LoginInput, RegisterInput } from "@repo/api";
 
 import { baseApi } from "../../api/base-api";
 
-
-type User = {
-  id: string;
-  name: string;
-  email: string;
-};
-
-type AuthResponse = {
-  accessToken: string;
-  user: User;
-};
 
 export const authApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({

@@ -4,8 +4,4 @@ export { loginSchema } from './auth/login.dto';
 export type { RegisterInput } from './auth/register.dto';
 export { registerSchema } from './auth/register.dto';
 
-export type {
-  AuthServiceResult,
-  AuthTokens,
-  AuthUser,
-} from './auth/auth.types';
+export type { AuthResponse, AuthUser } from './auth/auth.types';
