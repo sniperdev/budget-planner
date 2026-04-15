@@ -5,6 +5,7 @@ import { Provider } from "react-redux";
 
 import { useAppDispatch, useAppSelector } from "./hooks";
 import { authApi } from "./slices/auth/auth.api";
+import { clearSession, setSession } from "./slices/auth/auth.slice";
 import { AppStore, makeStore } from "./store";
 
 
@@ -15,17 +16,38 @@ type Properties = {
 function RefreshTokenListener() {
     const dispatch = useAppDispatch();
     const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+    const status = useAppSelector((state) => state.auth.status);
 
     React.useEffect(() => {
-        if (!isAuthenticated) return;
+        let refreshInterval: ReturnType<typeof setInterval> | undefined;
 
-        const refreshInterval = setInterval(() => {
-            console.log('Refreshing token...');
-            dispatch(authApi.endpoints.refresh.initiate());
-        }, 14 * 60 * 1000); // Refresh every 14 minutes
+        const refreshSession = async () => {
+            try {
+                const result = await dispatch(
+                    authApi.endpoints.refresh.initiate(undefined)
+                ).unwrap();
+                dispatch(setSession(result));
+            } catch {
+                dispatch(clearSession());
+            }
+        };
 
-        return () => clearInterval(refreshInterval);
-    }, [dispatch, isAuthenticated]);
+        if (status === "unknown") {
+            void refreshSession();
+        }
+
+        if (isAuthenticated) {
+            refreshInterval = setInterval(() => {
+                void refreshSession();
+            }, 14 * 60 * 1000); // Refresh every 14 minutes
+        }
+
+        return () => {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        };
+    }, [dispatch, isAuthenticated, status]);
 
     return <></>;
 }
