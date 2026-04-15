@@ -41,6 +41,8 @@ dist
 *.launch
 .settings/
 *.sublime-workspace
+.github/*
+!.github/workflows/
 
 # IDE - VSCode
 .vscode/*
