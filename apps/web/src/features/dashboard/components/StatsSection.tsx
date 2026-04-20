@@ -7,17 +7,21 @@ import {
   ShoppingCartOutlined,
 } from '@mui/icons-material';
 import { Box } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 import React from 'react';
 
 import { StatCard, StatCardProps } from './StatCard';
 
-const statTiles: StatCardProps[] = [
+type StatTile = Omit<StatCardProps, 'iconBgColor' | 'iconColor'> & {
+  tone: 'primary' | 'success' | 'error' | 'warning';
+};
+
+const statTiles: StatTile[] = [
   {
     title: 'Total Balance',
     value: '$12,450.75',
     icon: <AccountBalanceWalletOutlined fontSize="small" />,
-    iconBgColor: 'primary.light',
-    iconColor: 'primary.main',
+    tone: 'primary',
     trend: {
       value: '+12.5%',
       icon: <ShowChart fontSize="small" />,
@@ -28,8 +32,7 @@ const statTiles: StatCardProps[] = [
     title: 'Income this month',
     value: '$4,250.00',
     icon: <ArrowUpward fontSize="small" />,
-    iconBgColor: 'success.light',
-    iconColor: 'success.main',
+    tone: 'success',
     trend: {
       value: '+8.2%',
       icon: <ArrowUpward fontSize="small" />,
@@ -40,8 +43,7 @@ const statTiles: StatCardProps[] = [
     title: 'Expenses this month',
     value: '$2,980.40',
     icon: <ShoppingCartOutlined fontSize="small" />,
-    iconBgColor: 'error.light',
-    iconColor: 'error.main',
+    tone: 'error',
     trend: {
       value: '-3.4%',
       icon: <ArrowDownward fontSize="small" />,
@@ -52,8 +54,7 @@ const statTiles: StatCardProps[] = [
     title: 'Budget used',
     value: '62%',
     icon: <PieChartOutline fontSize="small" />,
-    iconBgColor: 'warning.light',
-    iconColor: 'warning.main',
+    tone: 'warning',
     trend: {
       value: '+4.1%',
       icon: <ArrowUpward fontSize="small" />,
@@ -63,6 +64,8 @@ const statTiles: StatCardProps[] = [
 ];
 
 export function StatsSection() {
+  const theme = useTheme();
+
   return (
     <Box
       sx={{
@@ -76,10 +79,19 @@ export function StatsSection() {
         },
       }}
     >
-      {statTiles.map((tile) => (
-        <StatCard key={tile.title} {...tile} />
-      ))}
+      {statTiles.map((tile) => {
+        const mainColor = theme.palette[tile.tone].main;
+        const iconBgColor = alpha(mainColor, 0.12);
+
+        return (
+          <StatCard
+            key={tile.title}
+            {...tile}
+            iconBgColor={iconBgColor}
+            iconColor={mainColor}
+          />
+        );
+      })}
     </Box>
   );
 }
-

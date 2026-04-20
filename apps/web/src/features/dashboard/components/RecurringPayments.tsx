@@ -1,5 +1,6 @@
 import { Avatar, Box, Card, CardContent, CardHeader, Typography } from '@mui/material';
 import { Circle } from '@mui/icons-material';
+import { alpha, useTheme } from '@mui/material/styles';
 import React from 'react';
 
 type RecurringPayment = {
@@ -7,8 +8,7 @@ type RecurringPayment = {
   name: string;
   nextDate: string;
   amount: number;
-  iconBgColor: string;
-  iconColor: string;
+  color: 'primary' | 'secondary' | 'success' | 'error';
 };
 
 const recurringPayments: RecurringPayment[] = [
@@ -17,32 +17,28 @@ const recurringPayments: RecurringPayment[] = [
     name: 'Netflix subscription',
     nextDate: '2026-04-15',
     amount: 15.99,
-    iconBgColor: 'error.light',
-    iconColor: 'error.main',
+    color: 'error',
   },
   {
     id: 'rp-002',
     name: 'Rent',
     nextDate: '2026-05-01',
     amount: 1200,
-    iconBgColor: 'primary.light',
-    iconColor: 'primary.main',
+    color: 'primary',
   },
   {
     id: 'rp-003',
     name: 'Gym membership',
     nextDate: '2026-05-05',
     amount: 39.99,
-    iconBgColor: 'success.light',
-    iconColor: 'success.main',
+    color: 'success',
   },
   {
     id: 'rp-004',
     name: 'Internet',
     nextDate: '2026-05-10',
     amount: 59.9,
-    iconBgColor: 'secondary.light',
-    iconColor: 'secondary.main',
+    color: 'secondary',
   },
 ];
 
@@ -54,6 +50,9 @@ function formatAmount(value: number) {
 }
 
 function RecurringPaymentItem({ payment }: { payment: RecurringPayment }) {
+  const theme = useTheme();
+  const mainColor = theme.palette[payment.color].main;
+
   return (
     <Box
       sx={{
@@ -70,10 +69,12 @@ function RecurringPaymentItem({ payment }: { payment: RecurringPayment }) {
     >
       <Avatar
         sx={{
-          bgcolor: payment.iconBgColor,
-          color: payment.iconColor,
+          bgcolor: alpha(mainColor, 0.12),
+          color: mainColor,
           width: 40,
           height: 40,
+          border: '1px solid',
+          borderColor: alpha(mainColor, 0.2),
         }}
       >
         <Circle fontSize="small" />

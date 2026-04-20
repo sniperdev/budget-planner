@@ -10,6 +10,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 import React from 'react';
 
 type TransactionType = 'income' | 'expense';
@@ -74,15 +75,9 @@ function formatAmount(amount: number, type: TransactionType) {
   })}`;
 }
 
-function getTypeBadgeStyles(type: TransactionType) {
-  const isIncome = type === 'income';
-  return {
-    bgcolor: isIncome ? 'success.light' : 'error.light',
-    color: isIncome ? 'success.dark' : 'error.dark',
-  };
-}
-
 export function RecentTransactions() {
+  const theme = useTheme();
+
   return (
     <Card variant="outlined" sx={{ mt: 3 }}>
       <CardHeader title="Recent transactions" />
@@ -133,7 +128,23 @@ export function RecentTransactions() {
                         fontSize: '0.75rem',
                         fontWeight: 600,
                         textTransform: 'capitalize',
-                        ...getTypeBadgeStyles(transaction.type),
+                        bgcolor: alpha(
+                          transaction.type === 'income'
+                            ? theme.palette.success.main
+                            : theme.palette.error.main,
+                          0.12,
+                        ),
+                        color:
+                          transaction.type === 'income'
+                            ? theme.palette.success.main
+                            : theme.palette.error.main,
+                        border: '1px solid',
+                        borderColor: alpha(
+                          transaction.type === 'income'
+                            ? theme.palette.success.main
+                            : theme.palette.error.main,
+                          0.2,
+                        ),
                       }}
                     >
                       {transaction.type}
