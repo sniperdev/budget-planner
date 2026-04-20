@@ -4,6 +4,10 @@ import { Box, Toolbar, useMediaQuery, useTheme } from '@mui/material';
 import React, { useState } from 'react';
 
 import AppDrawer from './app-drawer';
+import { MonthlyBudget } from './MonthlyBudget';
+import { RecentTransactions } from './RecentTransactions';
+import { RecurringPayments } from './RecurringPayments';
+import { StatsSection } from './StatsSection';
 import TopBar from './top-bar';
 
 const drawerWidth = 240;
@@ -35,6 +39,19 @@ export function DashboardView() {
         sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3 }}
       >
         <Toolbar />
+        <StatsSection />
+        <RecentTransactions />
+        <Box
+          sx={{
+            mt: 3,
+            display: 'grid',
+            gap: 2,
+            gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' },
+          }}
+        >
+          <MonthlyBudget />
+          <RecurringPayments />
+        </Box>
       </Box>
     </Box>
   );
